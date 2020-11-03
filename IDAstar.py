@@ -1,7 +1,14 @@
-#g(n) length of the path
-#h(n) num misplaced tiles number of tiles not in right place of tile
-#g(n) + h(n) = f
+# g(n) length of the path
+# h(n) num misplaced tiles number of tiles not in right place of tile
+# g(n) + h(n) = f
 
+
+import copy
+import time
+
+timesran = 0
+
+#pires method not changed
 def move_blank(i, j, n):
     if i + 1 < n:
         yield (i + 1, j)
@@ -13,6 +20,7 @@ def move_blank(i, j, n):
         yield (i, j - 1)
 
 
+#pires method not chagned
 def move(state):
     [i, j, grid] = state
     n = len(grid)
@@ -23,6 +31,8 @@ def move(state):
         grid[i][j], grid[i1][j1] = grid[i1][j1], grid[i][j]
 
 
+
+#not used carried over form part 1
 def isGoalState(state):
     [i, j, grid] = state
     x = 0
@@ -38,9 +48,73 @@ def isGoalState(state):
 
 
 
+# returns how many valeus are not in the right place
+def missmatchedGoalState(state):
+    [i, j, grid] = state
+    missmatched = 0
+    x = 0
+    for rows in grid:
+        for item in rows:
+            if x == 8:
+                if item != 0:
+                    missmatched = missmatched + 1
+                return missmatched
+            if item != x + 1:
+                missmatched = missmatched + 1
+            x = x + 1
+
+
+
+def IDAstart(state):
+    sloution = None
+    bound = 1 + missmatchedGoalState(state)
+    path = [state]
+    while sloution is None:  #runs untill soulouting is found
+        sloution, newbound = IDAstar(path, bound)
+        bound = newbound
+    return sloution
+
+
+def IDAstar(path, bound):
+    global timesran
+    g = len(path)
+    h = missmatchedGoalState(path[-1])
+    f = g + h       ## bound value of sate path[-1]
+    if f > bound:
+        return None, f
+    if h == 0:          ## if none are missmatched then is goal state
+        return path, f
+
+    laststate = copy.deepcopy(path[-1])  # deep copy as move method yeilds
+    min = float('inf')  # set min to infinty
+    for nextState in move(laststate):
+        timesran = timesran + 1
+        if nextState not in path:
+            nextpath = path + [nextState]
+            soloution, newbound = IDAstar(nextpath, bound)
+            if soloution != None: # golestate found
+                return soloution, newbound
+            if newbound < min:
+                min = newbound
+    return None, min
+
+
+
+
+# method to genororate timing and rest timesRan vaeriable between each call
+def IDAWithTmingsandMovesandLengths(state):
+    global timesran
+    timesran = 0
+    startTime = time.time()
+    soloutin = IDAstart(state)
+    endTime = time.time()
+    runtime = endTime - startTime
+    return soloutin, timesran, runtime
+
+
 if __name__ == '__main__':
 
-    #array of states given in brefi
+    # array of states given in brefi
     startStates = [
         [0, 0, [[0, 7, 1], [4, 3, 2], [8, 6, 5]]],
         [0, 2, [[5, 6, 0], [1, 3, 8], [4, 7, 2]]],
@@ -54,3 +128,10 @@ if __name__ == '__main__':
         [0, 2, [[5, 4, 0], [2, 3, 1], [8, 7, 6]]],
         [2, 1, [[8, 6, 7], [2, 5, 4], [3, 0, 1]]]
     ]
+
+    for state in startStates:
+        sloution, moves, timetaken = IDAWithTmingsandMovesandLengths(state)
+        print(len(sloution) - 1, ":Shortest number of Moves")
+        print(moves, "moves in path")
+        print(timetaken, "seconds")
+
