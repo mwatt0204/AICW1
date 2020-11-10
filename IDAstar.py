@@ -7,6 +7,8 @@ import copy
 import time
 
 timesran = 0
+goalState = [2, 2, [[1, 2, 3], [4, 5, 6], [7, 8, 0]]]
+
 
 #pires method not changed
 def move_blank(i, j, n):
@@ -49,19 +51,36 @@ def isGoalState(state):
 
 
 # returns how many valeus are not in the right place
+
+#dosnt work like this becuse obliceus one space awoay not difrence of 1
+
 def missmatchedGoalState(state):
     [i, j, grid] = state
     missmatched = 0
     x = 0
-    for rows in grid:
-        for item in rows:
+    for row in range(len(grid)):
+        for item in range(len(grid[row])):
             if x == 8:
-                if item != 0:
-                    missmatched = missmatched + 1
+                if grid[row][item] != 0:
+                    z,y = getpostioningoalState(grid[row][item])
+                    missmatched = missmatched + (abs(z-row) + abs(y - item))
+                #print(missmatched)
                 return missmatched
-            if item != x + 1:
-                missmatched = missmatched + 1
+            if grid[row][item] != x + 1:
+                z, y = getpostioningoalState(grid[row][item])
+                missmatched = missmatched + (abs(z - row) + abs(y - item))
             x = x + 1
+
+
+def getpostioningoalState(value):
+    [x,y, goalgrid] = goalState
+    for r in range(len(goalgrid)):
+        try:
+            postion = goalgrid[r].index(value)
+            return r,postion
+        except Exception:
+            pass
+    print("fallthorugh")
 
 
 
